@@ -16,7 +16,7 @@ local weaponNames = {
     "Shotgun",
     "ExplosiveShotty",
     "DualShotty",
-    "DBSShotty"
+    "DBShotty"
 }
 
 local function getClosestPlayer(character)

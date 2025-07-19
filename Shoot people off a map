@@ -1,0 +1,270 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wizard"))()
+
+local PhantomForcesWindow = Library:NewWindow("Felixx shoot people off a map")
+
+local KillingCheats = PhantomForcesWindow:NewSection("silent aim🎯")
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local toggleActive = false
+local shootConnection = nil
+
+local weaponNames = {
+    "CannonShotty",
+    "Shotgun",
+    "ExplosiveShotty",
+    "DualShotty",
+    "DoubleBarrelShotgun"
+}
+
+local function getClosestPlayer(character)
+    local closestPlayer
+    local closestDistance = math.huge
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local distance = (player.Character.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude
+            if distance < closestDistance then
+                closestDistance = distance
+                closestPlayer = player
+            end
+        end
+    end
+    return closestPlayer
+end
+
+local function getValidRemotes(character)
+    local remotes = {}
+    for _, name in ipairs(weaponNames) do
+        local tool = character:FindFirstChild(name)
+        if tool and tool:FindFirstChild("RemoteBridge") then
+            table.insert(remotes, tool.RemoteBridge)
+        end
+    end
+    return remotes
+end
+
+local function startAutoEz()
+    if shootConnection then shootConnection:Disconnect() end
+
+    shootConnection = RunService.Heartbeat:Connect(function(deltaTime)
+        if not toggleActive then return end
+
+        local character = LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local remotes = getValidRemotes(character)
+            local target = getClosestPlayer(character)
+
+            if #remotes > 0 and target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                local targetPos = target.Character.HumanoidRootPart.Position
+                for _, remote in ipairs(remotes) do
+                    pcall(function()
+                        remote:FireServer(targetPos)
+                    end)
+                end
+            end
+        end
+    end)
+end
+
+KillingCheats:CreateToggle("All Shotguns🔫", function(value)
+    toggleActive = value
+    if toggleActive then
+        startAutoEz()
+    elseif shootConnection then
+        shootConnection:Disconnect()
+        shootConnection = nil
+    end
+end)
+
+local KillingCheats = PhantomForcesWindow:NewSection("Automátic🤖")
+
+KillingCheats:CreateButton("Anti ragdoll", function()
+loadstring(game:HttpGet("https://rawscripts.net/raw/Shoot-People-Off-A-Map-Simulator-nti-kb-8005"))()
+end)
+
+local tspeed = 0
+local minSpeed = 0
+local maxSpeed = 100
+local hb = game:GetService("RunService").Heartbeat
+local tpwalking = true
+local player = game:GetService("Players")
+local lplr = player.LocalPlayer
+local hum
+
+local function isNumber(str)
+    return tonumber(str) ~= nil or str == 'inf'
+end
+
+local function adjustSpeed(newSpeed)
+    if isNumber(newSpeed) then
+        local speedValue = tonumber(newSpeed)
+        if speedValue < minSpeed then
+            tspeed = minSpeed
+        elseif speedValue > maxSpeed then
+            tspeed = maxSpeed
+        else
+            tspeed = speedValue
+        end
+    end
+end
+
+local function setupCharacter()
+    local chr = lplr.Character or lplr.CharacterAdded:Wait()
+    hum = chr:WaitForChild("Humanoid")
+
+    -- Reemplazo de input field por KillingCheats:CreateTextbox
+    KillingCheats:CreateTextbox("Speed", function(text)
+        adjustSpeed(text)
+    end)
+
+    -- Bucle de movimiento
+    spawn(function() -- Usar spawn para permitir que el bucle funcione en paralelo
+        while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+            if hum.MoveDirection.Magnitude > 0 then
+                local adjustedSpeed = tspeed * 0.2  -- Aumenta el multiplicador para velocidad mínima
+                chr:TranslateBy(hum.MoveDirection * adjustedSpeed)
+            end
+        end
+    end)
+end
+
+-- Configurar el personaje al iniciar
+setupCharacter()
+
+-- Conectar la función al evento CharacterAdded
+lplr.CharacterAdded:Connect(function()
+    -- Esperar que el nuevo personaje se configure antes de ejecutar
+    wait(0.5)  -- Espera un breve momento para asegurar que el personaje se cargue
+    setupCharacter()
+end)
+
+local KillingCheats = PhantomForcesWindow:NewSection("Misc💫")
+
+local autoEzEnabled = false
+
+KillingCheats:CreateToggle("Collet all cash💸", function(value)
+    autoEzEnabled = value
+    if value then
+        local function collectCash()
+            for _, cashObject in ipairs(workspace.Cash:GetChildren()) do
+                if cashObject:FindFirstChild("Main") and cashObject.Main:FindFirstChild("TouchInterest") then
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, cashObject.Main, 0)
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, cashObject.Main, 1)
+                end
+            end
+        end
+        
+        spawn(function()
+            while true do
+                if not autoEzEnabled then break end
+                collectCash()
+                wait()
+            end
+        end)
+        
+        game.Players.LocalPlayer.CharacterAdded:Connect(function()
+            while autoEzEnabled do
+                collectCash()
+                wait()
+            end
+        end)
+    end
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local glitch = workspace:FindFirstChild("Glitch")
+
+local connection
+local charConnection
+
+local function startGlitchCheck()
+    if not glitch or not glitch:IsA("BasePart") then
+        print("No se encontró Glitch o no es una parte física.")
+        return
+    end
+
+    connection = RunService.Heartbeat:Connect(function()
+        local isVisible = glitch.Transparency < 1
+
+        local hasEffect = false
+        for _, descendant in ipairs(glitch:GetDescendants()) do
+            if descendant:IsA("ParticleEmitter") and descendant.Enabled then
+                hasEffect = true
+                break
+            end
+        end
+
+        local hasAnimator = glitch:FindFirstChildWhichIsA("Animator", true) ~= nil
+
+        if isVisible and (hasEffect or hasAnimator) then
+            local currentChar = player.Character
+            if currentChar and currentChar:FindFirstChild("HumanoidRootPart") then
+                currentChar.HumanoidRootPart.CFrame = glitch.CFrame
+                print("Glitch se activó visualmente. Teletransportado.")
+            end
+        end
+    end)
+end
+
+KillingCheats:CreateToggle("Auto glitch badge👨‍💻", function(value)
+    if value then
+        startGlitchCheck()
+
+        -- Reiniciar si el personaje muere
+        charConnection = player.CharacterAdded:Connect(function(newChar)
+            if connection then
+                connection:Disconnect()
+            end
+            character = newChar
+            hrp = character:WaitForChild("HumanoidRootPart")
+            startGlitchCheck()
+        end)
+
+    else
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+        if charConnection then
+            charConnection:Disconnect()
+            charConnection = nil
+        end
+        print("Auto Ez desactivado.")
+    end
+end)
+
+KillingCheats:CreateButton("Get drop📦", function()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+local airdropsFolder = workspace:WaitForChild("Airdrops")
+
+local oldCFrame = HumanoidRootPart.CFrame
+
+for _, airdrop in ipairs(airdropsFolder:GetChildren()) do
+    if airdrop:IsA("Model") and airdrop:FindFirstChildWhichIsA("ProximityPrompt", true) then
+        local prompt = airdrop:FindFirstChildWhichIsA("ProximityPrompt", true)
+        local root = airdrop.PrimaryPart or airdrop:FindFirstChild("Part") or airdrop:FindFirstChildWhichIsA("BasePart")
+
+        if root then
+            HumanoidRootPart.CFrame = root.CFrame + Vector3.new(0, 3, 0)
+            task.wait(0.2)
+            fireproximityprompt(prompt, prompt.HoldDuration)
+            task.wait(0.5)
+        end
+    end
+end
+
+HumanoidRootPart.CFrame = oldCFrame
+end)
